@@ -43,7 +43,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/uploads', express.static('uploads'));
 
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://192.168.40.100:3000' ], // Replace with your client origin
+    origin: ['https://tranquil-dolphin-a28337.netlify.app' ], // Replace with your client origin
     methods: ['GET', 'POST', 'PUT', 'DELETE'], 
     credentials: true, // Enable cookies and other credentials in CORS requests
 }));
