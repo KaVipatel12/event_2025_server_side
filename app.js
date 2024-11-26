@@ -7,22 +7,24 @@ const MongoStore = require('connect-mongo');
 const session = require('express-session');
 const PORT = process.env.PORT || 8000; // Define port
 
+
+app.use(cors({
+    origin: ['https://tranquil-dolphin-a28337.netlify.app' ], // Replace with your client origin
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], 
+    credentials: true, // Enable cookies and other credentials in CORS requests
+}));
+
 app.use(session({
-    secret: process.env.SESSION_SECRET_KEY,
+    secret: process.env.SESSION_SECRET, // Store in .env file
     resave: false,
     saveUninitialized: false,
-    store: MongoStore.create({
-        mongoUrl: process.env.MONGODB_URI,  // Use an environment variable for security
-        collectionName: 'sessions',
-    }),
+    store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
     cookie: {
-        domain: 'tranquil-dolphin-a28337.netlify.app',  // Replace with your actual domain
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'None',
-        maxAge: 60000 * 5
-      }
-}))
+      secure: true,  // Use 'true' for HTTPS
+      sameSite: 'none', // Required for cross-origin requests
+      maxAge: 1000 * 60 * 60,  // 1 hour
+    }
+  }));
 
 const errorMiddleware = require('./Middleware/errorMiddleware');
 
@@ -44,11 +46,6 @@ app.use(cookieParser());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/uploads', express.static('uploads'));
 
-app.use(cors({
-    origin: ['https://tranquil-dolphin-a28337.netlify.app' ], // Replace with your client origin
-    methods: ['GET', 'POST', 'PUT', 'DELETE'], 
-    credentials: true, // Enable cookies and other credentials in CORS requests
-}));
 
 
 app.use("/api/auth", router)
