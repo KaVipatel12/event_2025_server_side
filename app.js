@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 8000; // Define port
 
 
 app.use(cors({
-    origin: ['https://tranquil-dolphin-a28337.netlify.app' ], // Replace with your client origin
+    origin: ['https://tranquil-dolphin-a28337.netlify.app' ], 
     methods: ['GET', 'POST', 'PUT', 'DELETE'], 
     credentials: true, // Enable cookies and other credentials in CORS requests
 }));
@@ -20,7 +20,7 @@ app.use(session({
     saveUninitialized: false,
     store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
     cookie: {
-      secure: process.env.NODE_ENV === 'production',  // Use 'true' for HTTPS
+      secure: true,  // Use 'true' for HTTPS
       sameSite: 'none', // Required for cross-origin requests
       maxAge: 1000 * 60 * 60,  // 1 hour
     }
