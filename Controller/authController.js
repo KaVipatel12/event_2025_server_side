@@ -177,7 +177,7 @@ const newPassword = async (req, res) => {
         const otp = req.session.otp;
 
         if (!otp) {
-            return res.status(401).send({ msg: "Unauthorized Access" });
+            return res.status(401).send({ msg: "Unauthorized Access" + otp });
         }else{
             return res.status(200).send({ msg: "Unauthorized Access" + otp });
 
