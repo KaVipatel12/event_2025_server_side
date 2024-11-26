@@ -7,6 +7,7 @@ const MongoStore = require('connect-mongo');
 const session = require('express-session');
 const PORT = process.env.PORT || 8000; // Define port
 
+app.set('trust proxy', true);
 
 app.use(cors({
     origin: ['https://tranquil-dolphin-a28337.netlify.app' ], 
