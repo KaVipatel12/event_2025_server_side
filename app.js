@@ -6,7 +6,6 @@ const cors = require("cors");
 const MongoStore = require('connect-mongo');
 const session = require('express-session');
 const PORT = process.env.PORT || 8000; // Define port
-const HOST = '192.168.40.100'; // Define host (local IP)
 
 app.use(session({
     secret: process.env.SESSION_SECRET_KEY,
@@ -16,10 +15,12 @@ app.use(session({
         mongoUrl: process.env.MONGODB_URI,  // Use an environment variable for security
         collectionName: 'sessions',
     }),
-    cookie: { 
-        secure: false,  // Set to `true` if you're using https
-        maxAge: 60000 * 5  // Session expires in 5 minutes
-    }
+    cookie: {
+        domain: 'tranquil-dolphin-a28337.netlify.app',  // Replace with your actual domain
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 60000 * 5
+      }
 }))
 
 const errorMiddleware = require('./Middleware/errorMiddleware');
