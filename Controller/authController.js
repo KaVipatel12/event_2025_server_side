@@ -91,53 +91,64 @@ const user = async (req, res) =>{
 const sendOtpEmail = async (req, res) => {
     const { email, recaptcha } = req.body;
 
-    axios({
-        url : `https://www.google.com/recaptcha/api/siteverify?secret=${SECRET_KEY}&response=${recaptcha}`, 
-        method: "POST"
-    }).then(async ({data}) => {
-    const user = await User.findOne({ email });
+    // Check if session exists before doing anything with it
+    console.log("Session Before:", req.session);
 
-    if (!user) {
-        return res.status(401).send({ msg: "Invalid Email" }); 
-    } else {
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    // ReCAPTCHA verification
+    try {
+        const { data } = await axios.post(`https://www.google.com/recaptcha/api/siteverify?secret=${SECRET_KEY}&response=${recaptcha}`);
+        
+        const user = await User.findOne({ email });
 
-        const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            host: 'smtp.gmail.com',
-            port: 587,
-            secure: false, 
-            auth: {
-                user: "kushpatel24811@gmail.com",
-                pass: process.env.APP_PASSWORD,
-            },
-        });
+        if (!user) {
+            return res.status(401).send({ msg: "Invalid Email" }); 
+        } else {
+            const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-        const mailOptions = {
-            from: {
-                name: 'eminancee',
-                address:process.env.GMAIL_USER,
-            },
-            to: email,
-            subject: "Here is your OTP",
-            text: otp,
-        };
+            const transporter = nodemailer.createTransport({
+                service: 'gmail',
+                host: 'smtp.gmail.com',
+                port: 587,
+                secure: false,
+                auth: {
+                    user: "kushpatel24811@gmail.com",
+                    pass: process.env.APP_PASSWORD,
+                },
+            });
 
-        try {
-            await transporter.sendMail(mailOptions);
-            if (!req.session) {
-                return res.status(500).send({ msg: "Session is not initialized properly" });
+            const mailOptions = {
+                from: {
+                    name: 'eminancee',
+                    address: process.env.GMAIL_USER,
+                },
+                to: email,
+                subject: "Here is your OTP",
+                text: otp,
+            };
+
+            try {
+                await transporter.sendMail(mailOptions);
+
+                // Ensure session is initialized and OTP is set
+                if (!req.session) {
+                    return res.status(500).send({ msg: "Session not initialized" });
+                }
+
+                // Set OTP and email in session
+                req.session.otp = otp;
+                req.session.email = email;
+                console.log("Session After Setting OTP:", req.session);
+
+                res.status(200).send({ msg: 'OTP sent, OTP has been sent to your email' + req.session.otp });
+            } catch (error) {
+                res.status(500).send({ msg: "There is some error in the server, please try again later" });
             }
-            req.session.otp = otp;
-            req.session.email = email;
-            res.status(200).send({ msg: 'OTP sent, OTP has been sent to your email' + req.session.otp});
-        } catch (error) {
-            res.status(500).send({ msg: "There is some error in the server, please try again later" });
         }
+    } catch (error) {
+        res.status(400).send({ msg: "Invalid captcha" });
     }
-    }).catch(error => {
-        res.status(400).send({msg : "Invalid captcha"})
-    })}
+};
+
 
 const otpVerification = async (req, res) => {
     try {
