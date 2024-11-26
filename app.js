@@ -15,7 +15,7 @@ app.use(cors({
 }));
 
 app.use(session({
-    secret: process.env.SESSION_SECRET, // Store in .env file
+    secret: process.env.SESSION_SECRET_KEY, // Store in .env file
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
