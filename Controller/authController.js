@@ -91,78 +91,67 @@ const user = async (req, res) =>{
 const sendOtpEmail = async (req, res) => {
     const { email, recaptcha } = req.body;
 
-    // Check if session exists before doing anything with it
-    console.log("Session Before:", req.session);
+    axios({
+        url : `https://www.google.com/recaptcha/api/siteverify?secret=${SECRET_KEY}&response=${recaptcha}`, 
+        method: "POST"
+    }).then(async ({data}) => {
+    const user = await User.findOne({ email });
 
-    // ReCAPTCHA verification
-    try {
-        const { data } = await axios.post(`https://www.google.com/recaptcha/api/siteverify?secret=${SECRET_KEY}&response=${recaptcha}`);
-        
-        const user = await User.findOne({ email });
+    if (!user) {
+        return res.status(401).send({ msg: "Invalid Email" }); 
+    } else {
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-        if (!user) {
-            return res.status(401).send({ msg: "Invalid Email" }); 
-        } else {
-            const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            host: 'smtp.gmail.com',
+            port: 587,
+            secure: false, 
+            auth: {
+                user: "kushpatel24811@gmail.com",
+                pass: process.env.APP_PASSWORD,
+            },
+        });
 
-            const transporter = nodemailer.createTransport({
-                service: 'gmail',
-                host: 'smtp.gmail.com',
-                port: 587,
-                secure: false,
-                auth: {
-                    user: "kushpatel24811@gmail.com",
-                    pass: process.env.APP_PASSWORD,
-                },
-            });
+        const mailOptions = {
+            from: {
+                name: 'eminancee',
+                address:process.env.GMAIL_USER,
+            },
+            to: email,
+            subject: "Here is your OTP",
+            text: otp,
+        };
 
-            const mailOptions = {
-                from: {
-                    name: 'eminancee',
-                    address: process.env.GMAIL_USER,
-                },
-                to: email,
-                subject: "Here is your OTP",
-                text: otp,
-            };
-
-            try {
-                await transporter.sendMail(mailOptions);
-
-                // Ensure session is initialized and OTP is set
-                if (!req.session) {
-                    return res.status(500).send({ msg: "Session not initialized" });
-                }
-
-                // Set OTP and email in session
-                req.session.otp = otp;
-                req.session.email = email;
-                console.log("Session After Setting OTP:", req.session);
-
-                res.status(200).send({ msg: 'OTP sent, OTP has been sent to your email' + req.session.otp });
-            } catch (error) {
-                res.status(500).send({ msg: "There is some error in the server, please try again later" });
+        try {
+            await transporter.sendMail(mailOptions);
+            if (!req.session) {
+                return res.status(500).send({ msg: "Session is not initialized properly" });
             }
+            req.session.otp = otp;
+            req.session.email = email;
+            res.status(200).send({ msg: 'OTP sent, OTP has been sent to your email' + req.session.otp});
+        } catch (error) {
+            res.status(500).send({ msg: "There is some error in the server, please try again later" });
         }
-    } catch (error) {
-        res.status(400).send({ msg: "Invalid captcha" });
     }
-};
-
+    }).catch(error => {
+        res.status(400).send({msg : "Invalid captcha"})
+    })}
 
 const otpVerification = async (req, res) => {
     try {
-        
-        req.session.otp = "123456";
+        const { otp } = req.body;
+         const otpSession = req.session.otp
 
-        // if (!otpSession) {
-        //     return res.status(401).send({ msg: "OTP expired." + otpSession });  
-        // }
+        if (!otpSession) {
+            return res.status(401).send({ msg: "OTP expired." + otpSession });  
+        }
 
-        // if (otp !== otpSession) {
-        //     return res.status(400).send({ msg: "Enter the correct OTP" });  
-        // }
-  
+        if (otp !== otpSession) {
+            return res.status(400).send({ msg: "Enter the correct OTP" });  
+        }
+
         return res.status(200).send({ msg: "OTP verification successful" });
 
     } catch (error) {
@@ -176,11 +165,13 @@ const newPassword = async (req, res) => {
         const email = req.session.email;
         const otp = req.session.otp;
 
-        if (!otp) {
-            return res.status(401).send({ msg: "Unauthorized Access" + otp });
-        }else{
-            return res.status(200).send({ msg: "Unauthorized Access" + otp });
+        if (!otp || !email) {
+            return res.status(401).send({ msg: "Unauthorized Access" });
+        }
 
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).send({ msg: "User not found" });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
