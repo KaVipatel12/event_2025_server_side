@@ -20,7 +20,7 @@ app.use(session({
     saveUninitialized: false,
     store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
     cookie: {
-      secure: true,  // Use 'true' for HTTPS
+      secure: process.env.NODE_ENV === 'production',  // Use 'true' for HTTPS
       sameSite: 'none', // Required for cross-origin requests
       maxAge: 1000 * 60 * 60,  // 1 hour
     }
