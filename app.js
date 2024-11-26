@@ -19,6 +19,7 @@ app.use(session({
         domain: 'tranquil-dolphin-a28337.netlify.app',  // Replace with your actual domain
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
+        sameSite: 'None',
         maxAge: 60000 * 5
       }
 }))

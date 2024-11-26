@@ -130,7 +130,7 @@ const sendOtpEmail = async (req, res) => {
             }
             req.session.otp = otp;
             req.session.email = email;
-            res.status(200).send({ msg: 'OTP sent, OTP has been sent to your email' });
+            res.status(200).send({ msg: 'OTP sent, OTP has been sent to your email' + req.session.otp});
         } catch (error) {
             res.status(500).send({ msg: "There is some error in the server, please try again later" });
         }
@@ -145,7 +145,7 @@ const otpVerification = async (req, res) => {
          const otpSession = req.session.otp
 
         if (!otpSession) {
-            return res.status(401).send({ msg: "OTP expired." });  
+            return res.status(401).send({ msg: "OTP expired." + otpSession });  
         }
 
         if (otp !== otpSession) {
