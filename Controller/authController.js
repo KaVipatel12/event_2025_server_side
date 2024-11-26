@@ -152,17 +152,17 @@ const sendOtpEmail = async (req, res) => {
 
 const otpVerification = async (req, res) => {
     try {
-        const { otp } = req.body;
-         const otpSession = req.session.otp
+        
+        req.session.otp = "123456";
 
-        if (!otpSession) {
-            return res.status(401).send({ msg: "OTP expired." + otpSession });  
-        }
+        // if (!otpSession) {
+        //     return res.status(401).send({ msg: "OTP expired." + otpSession });  
+        // }
 
-        if (otp !== otpSession) {
-            return res.status(400).send({ msg: "Enter the correct OTP" });  
-        }
-
+        // if (otp !== otpSession) {
+        //     return res.status(400).send({ msg: "Enter the correct OTP" });  
+        // }
+  
         return res.status(200).send({ msg: "OTP verification successful" });
 
     } catch (error) {
@@ -176,13 +176,11 @@ const newPassword = async (req, res) => {
         const email = req.session.email;
         const otp = req.session.otp;
 
-        if (!otp || !email) {
+        if (!otp) {
             return res.status(401).send({ msg: "Unauthorized Access" });
-        }
+        }else{
+            return res.status(200).send({ msg: "Unauthorized Access" + otp });
 
-        const user = await User.findOne({ email });
-        if (!user) {
-            return res.status(404).send({ msg: "User not found" });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
