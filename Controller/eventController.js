@@ -9,7 +9,7 @@ const fs = require('fs');
 const techEventMainPage = async (req, res) => {
     try {
 
-        let techEvents = await techEventModel.find({});
+        let techEvents = await techEventModel.find({} , "tech_event_name");
 
         if (!techEvents || techEvents.length === 0) {
             return res.status(404).send({ msg: "No tech events found" });
