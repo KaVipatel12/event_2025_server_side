@@ -31,7 +31,7 @@ const techEventMainPage = async (req, res) => {
 const nonTechEventMainPage = async (req, res) => {
     try {
 
-        let nonTechEvents = await nonTechEventModel.find({});
+        let nonTechEvents = await nonTechEventModel.find({}, "nontech_event_name");
 
         if (!nonTechEvents || nonTechEvents.length === 0) {
             return res.status(404).send({ msg: "No tech events found" });
@@ -177,7 +177,6 @@ const deleteCart = async (req, res) => {
 };
  
 // Making the payment mode
-
 
 const purchaseEvent = async (req, res) => {
     const userId = req.user._id;
