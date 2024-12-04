@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 8000; // Define port
 app.set('trust proxy', true);
 
 app.use(cors({
-    origin: ['https://tranquil-dolphin-a28337.netlify.app' ], 
+    origin: ['https://event2025eminance.netlify.app' ], 
     methods: ['GET', 'POST', 'PUT', 'DELETE'], 
     credentials: true, // Enable cookies and other credentials in CORS requests
 }));
@@ -25,7 +25,7 @@ app.use(session({
       sameSite: 'none', // Required for cross-origin requests
       maxAge: 1000 * 60 * 60,  // 1 hour
     }
-  }));
+  }));  
 
 const errorMiddleware = require('./Middleware/errorMiddleware');
 
