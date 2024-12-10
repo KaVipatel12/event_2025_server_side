@@ -3,15 +3,11 @@ const bcrypt = require("bcrypt")
 const nodemailer = require('nodemailer');
 const axios = require("axios"); 
 const SECRET_KEY = process.env.CAPTCHA_KEY; 
+
 const register = async (req,res)=>{
     try{
-        const {username, email, password, mobile, college_name, department, enrollment, recaptcha } = req.body; 
+        const {username, email, password, mobile, college_name, department, enrollment} = req.body; 
         
-        axios({
-            url : `https://www.google.com/recaptcha/api/siteverify?secret=${SECRET_KEY}&response=${recaptcha}`, 
-            method: "POST"
-        }).then(async ({data}) => {
-
             let userExist = await User.findOne({email})
             
             if(!userExist){
@@ -29,28 +25,17 @@ const register = async (req,res)=>{
         }else{
             return res.status(400).json({message : "Email already exists"});      // The code is written in the user-model
         }   
-        
-    }).catch(error => {
-        res.status(400).send({msg : "Invalid captcha"})
-    })
-        
+
     }catch(error){
         res.status(500).json("Internal servor error" + error)
     }
 
 };
 
-const login = (req,res)=>{
+const login = async (req,res)=>{
     try{
-        const {email, password, recaptcha} = req.body; 
-        
-        axios({
-            url : `https://www.google.com/recaptcha/api/siteverify?secret=${SECRET_KEY}&response=${recaptcha}`, 
-            method: "POST"
-        }).then(async ({data}) => {
+        const {email, password} = req.body; 
 
-            if(data.success){
-                
                 let userExist = await User.findOne({email})
         
                 if(!userExist){
@@ -65,19 +50,11 @@ const login = (req,res)=>{
                         return res.status(401).json({msg: "Invalid credentials"})
                     }
                 }       
-            }else{
-                return res.status(401).json({msg: "Invalid credentials"})
-            }
-        }).catch(error => {
-            res.status(400).send({msg : "Invalid captcha"})
-        })
-
-    }catch(error){
+            }catch(error){
         res.status(500).json("Internal servor error")
     }
 
 };
-
 
 const user = async (req, res) =>{
     try{
@@ -89,12 +66,8 @@ const user = async (req, res) =>{
 }
 
 const sendOtpEmail = async (req, res) => {
-    const { email, recaptcha } = req.body;
+    const { email } = req.body;
 
-    axios({
-        url : `https://www.google.com/recaptcha/api/siteverify?secret=${SECRET_KEY}&response=${recaptcha}`, 
-        method: "POST"
-    }).then(async ({data}) => {
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -135,9 +108,7 @@ const sendOtpEmail = async (req, res) => {
             res.status(500).send({ msg: "There is some error in the server, please try again later" });
         }
     }
-    }).catch(error => {
-        res.status(400).send({msg : "Invalid captcha"})
-    })}
+}
 
 const otpVerification = async (req, res) => {
     try {
